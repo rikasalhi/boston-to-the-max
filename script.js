@@ -1,653 +1,345 @@
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
-
 const nextButton = document.getElementById("nextButton");
 
-
-// ------------------------------------
-// BOSTON PHOTOS
-// ------------------------------------
-
 const photos = [
-
-    {
-        src: "imageswebsite/newbury.jpg",
-        name: "Newbury Street"
-    },
-
-    {
-        src: "imageswebsite/common.jpg",
-        name: "Boston Common"
-    },
-
-    {
-        src: "imageswebsite/beacon.jpg",
-        name: "Beacon Hill"
-    }
-
+    "imageswebsite/newbury.jpg",
+    "imageswebsite/common.jpg",
+    "imageswebsite/beacon.jpg"
 ];
 
-
 let currentPhoto = 0;
-
 let img = new Image();
-
-let imageData;
-
+let imageData = null;
 let circles = [];
 
-let splitCount = 0;
-
-
-// How tiny the circles can become
-
 const MIN_SIZE = 4;
+const START_SIZE = 256;
 
 
-// How much exploring before NEXT appears
+// ================================
+// LOAD A PHOTO
+// ================================
 
-const SHOW_NEXT_AFTER = 250;
+function loadPhoto(index) {
 
-
-// ------------------------------------
-// LOAD PHOTO
-// ------------------------------------
-
-function loadPhoto() {
-
-    // Hide NEXT button again
-
-    nextButton.classList.remove("show");
-
-
-    // Reset counter
-
-    splitCount = 0;
-
-
-    // Create new image
+    currentPhoto = index;
 
     img = new Image();
 
-
-    // Load correct photo
-
-    img.src = photos[currentPhoto].src;
-
-
     img.onload = function () {
-
         setup();
-
     };
-
 
     img.onerror = function () {
-
-        console.error(
-            "Could not load:",
-            photos[currentPhoto].src
-        );
-
+        console.error("IMAGE FAILED:", photos[currentPhoto]);
     };
 
+    img.src = photos[currentPhoto];
 }
 
 
-// ------------------------------------
-// SETUP CANVAS
-// ------------------------------------
+// ================================
+// SET UP CANVAS
+// ================================
 
 function setup() {
 
     canvas.width = window.innerWidth;
-
     canvas.height = window.innerHeight;
 
-
-    createImageData();
-
-    createStartingGrid();
-
+    prepareImage();
+    createGrid();
     draw();
-
 }
 
 
-// ------------------------------------
-// PREPARE PHOTO
-// ------------------------------------
+// ================================
+// PREPARE HIDDEN PHOTO
+// ================================
 
-function createImageData() {
+function prepareImage() {
 
-    const tempCanvas =
-        document.createElement("canvas");
+    const hiddenCanvas = document.createElement("canvas");
+    const hiddenCtx = hiddenCanvas.getContext("2d");
 
-
-    const tempCtx =
-        tempCanvas.getContext("2d");
-
-
-    tempCanvas.width =
-        canvas.width;
-
-
-    tempCanvas.height =
-        canvas.height;
-
-
-
-    // Scale photo so it fills screen
+    hiddenCanvas.width = canvas.width;
+    hiddenCanvas.height = canvas.height;
 
     const scale = Math.max(
-
         canvas.width / img.width,
-
         canvas.height / img.height
-
     );
 
+    const width = img.width * scale;
+    const height = img.height * scale;
 
-    const width =
-        img.width * scale;
+    const x = (canvas.width - width) / 2;
+    const y = (canvas.height - height) / 2;
 
-
-    const height =
-        img.height * scale;
-
-
-    const x =
-        (canvas.width - width) / 2;
-
-
-    const y =
-        (canvas.height - height) / 2;
-
-
-
-    tempCtx.drawImage(
-
+    hiddenCtx.drawImage(
         img,
-
         x,
-
         y,
-
         width,
-
         height
-
     );
 
-
-
-    imageData =
-        tempCtx.getImageData(
-
-            0,
-
-            0,
-
-            canvas.width,
-
-            canvas.height
-
-        );
-
+    imageData = hiddenCtx.getImageData(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
 }
 
 
-// ------------------------------------
-// GET COLOR FROM PHOTO
-// ------------------------------------
+// ================================
+// SAMPLE COLOR
+// ================================
 
 function getColor(x, y) {
 
     x = Math.floor(
-
         Math.max(
-
             0,
-
-            Math.min(
-                canvas.width - 1,
-                x
-            )
-
+            Math.min(canvas.width - 1, x)
         )
-
     );
-
 
     y = Math.floor(
-
         Math.max(
-
             0,
-
-            Math.min(
-                canvas.height - 1,
-                y
-            )
-
+            Math.min(canvas.height - 1, y)
         )
-
     );
 
+    const i = (y * canvas.width + x) * 4;
 
-
-    const index =
-        (y * canvas.width + x) * 4;
-
-
-
-    const red =
-        imageData.data[index];
-
-
-    const green =
-        imageData.data[index + 1];
-
-
-    const blue =
-        imageData.data[index + 2];
-
-
-
-    return `rgb(${red}, ${green}, ${blue})`;
-
+    return `rgb(
+        ${imageData.data[i]},
+        ${imageData.data[i + 1]},
+        ${imageData.data[i + 2]}
+    )`;
 }
 
 
-// ------------------------------------
-// CIRCLE CLASS
-// ------------------------------------
+// ================================
+// CIRCLE
+// ================================
 
 class Circle {
 
     constructor(x, y, size) {
 
         this.x = x;
-
         this.y = y;
-
         this.size = size;
 
-
-        this.color =
-            getColor(
-
-                x + size / 2,
-
-                y + size / 2
-
-            );
-
+        this.color = getColor(
+            x + size / 2,
+            y + size / 2
+        );
     }
-
 
 
     draw() {
 
-        const radius =
-            this.size / 2;
-
+        const radius = this.size / 2;
 
         ctx.beginPath();
 
-
         ctx.arc(
-
             this.x + radius,
-
             this.y + radius,
-
             radius,
-
             0,
-
             Math.PI * 2
-
         );
 
-
-        ctx.fillStyle =
-            this.color;
-
-
+        ctx.fillStyle = this.color;
         ctx.fill();
-
     }
 
 
-
-    contains(mouseX, mouseY) {
+    contains(x, y) {
 
         return (
-
-            mouseX >= this.x &&
-
-            mouseX <=
-            this.x + this.size &&
-
-            mouseY >= this.y &&
-
-            mouseY <=
-            this.y + this.size
-
+            x >= this.x &&
+            x <= this.x + this.size &&
+            y >= this.y &&
+            y <= this.y + this.size
         );
-
     }
-
 
 
     split() {
 
-        if (
-            this.size <= MIN_SIZE
-        ) {
-
+        if (this.size <= MIN_SIZE) {
             return [this];
-
         }
 
-
-        const half =
-            this.size / 2;
-
-
+        const half = this.size / 2;
 
         return [
-
             new Circle(
-
                 this.x,
-
                 this.y,
-
                 half
-
             ),
 
-
             new Circle(
-
                 this.x + half,
-
                 this.y,
-
                 half
-
             ),
 
-
             new Circle(
-
                 this.x,
-
                 this.y + half,
-
                 half
-
             ),
 
-
             new Circle(
-
                 this.x + half,
-
                 this.y + half,
-
                 half
-
             )
-
         ];
-
     }
-
 }
 
 
-// ------------------------------------
-// CREATE STARTING CIRCLES
-// ------------------------------------
+// ================================
+// STARTING GRID
+// ================================
 
-function createStartingGrid() {
+function createGrid() {
 
     circles = [];
 
-
-    const startingSize = 256;
-
-
-
     for (
-
         let y = 0;
-
         y < canvas.height;
-
-        y += startingSize
-
+        y += START_SIZE
     ) {
 
-
         for (
-
             let x = 0;
-
             x < canvas.width;
-
-            x += startingSize
-
+            x += START_SIZE
         ) {
 
-
             circles.push(
-
                 new Circle(
-
                     x,
-
                     y,
-
-                    startingSize
-
+                    START_SIZE
                 )
-
             );
-
         }
-
     }
-
 }
 
 
-// ------------------------------------
-// DRAW CIRCLES
-// ------------------------------------
+// ================================
+// DRAW
+// ================================
 
 function draw() {
 
     ctx.clearRect(
-
         0,
-
         0,
-
         canvas.width,
-
         canvas.height
-
     );
 
-
-    for (
-        const circle of circles
-    ) {
-
+    for (const circle of circles) {
         circle.draw();
-
     }
-
 }
 
 
-// ------------------------------------
-// MOUSE MOVEMENT
-// ------------------------------------
+// ================================
+// HOVER = SPLIT
+// ================================
 
 canvas.addEventListener(
-
     "mousemove",
-
     function (event) {
 
+        const mouseX = event.clientX;
+        const mouseY = event.clientY;
 
-        const mouseX =
-            event.clientX;
-
-
-        const mouseY =
-            event.clientY;
-
-
-
-        const nextCircles = [];
-
+        const newCircles = [];
 
         let changed = false;
 
-
-
-        for (
-            const circle of circles
-        ) {
-
+        for (const circle of circles) {
 
             if (
-
-                circle.contains(
-                    mouseX,
-                    mouseY
-                )
-
-                &&
-
+                circle.contains(mouseX, mouseY) &&
                 circle.size > MIN_SIZE
-
             ) {
 
-
-                nextCircles.push(
-
+                newCircles.push(
                     ...circle.split()
-
                 );
-
-
-                splitCount++;
-
 
                 changed = true;
 
+            } else {
+
+                newCircles.push(circle);
             }
-
-
-            else {
-
-
-                nextCircles.push(
-                    circle
-                );
-
-            }
-
         }
 
-
-
-        circles =
-            nextCircles;
-
-
+        circles = newCircles;
 
         if (changed) {
-
             draw();
-
         }
-
-
-
-        // Reveal NEXT after enough interaction
-
-        if (
-            splitCount >= SHOW_NEXT_AFTER
-        ) {
-
-            nextButton.classList.add(
-                "show"
-            );
-
-        }
-
     }
-
 );
 
 
-// ------------------------------------
+// ================================
 // NEXT PHOTO
-// ------------------------------------
+// ================================
 
 nextButton.addEventListener(
-
     "click",
-
     function () {
 
+        let nextPhoto = currentPhoto + 1;
 
-        currentPhoto++;
-
-
-        if (
-            currentPhoto >= photos.length
-        ) {
-
-            currentPhoto = 0;
-
+        if (nextPhoto >= photos.length) {
+            nextPhoto = 0;
         }
 
-
-        loadPhoto();
-
+        loadPhoto(nextPhoto);
     }
-
 );
 
 
-// ------------------------------------
-// RESIZE WINDOW
-// ------------------------------------
+// ================================
+// WINDOW RESIZE
+// ================================
 
 window.addEventListener(
-
     "resize",
-
     function () {
 
-        setup();
-
+        if (img.complete) {
+            setup();
+        }
     }
-
 );
 
 
-// ------------------------------------
-// START WEBSITE
-// ------------------------------------
+// ================================
+// START
+// ================================
 
-loadPhoto();
+loadPhoto(0);
