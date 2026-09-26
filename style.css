@@ -4,6 +4,7 @@
     box-sizing: border-box;
 }
 
+
 html,
 body {
     width: 100%;
@@ -11,100 +12,116 @@ body {
     overflow: hidden;
 }
 
-body {
-    background: #ffffff;
-    font-family: Arial, Helvetica, sans-serif;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+body {
+    background: white;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
 }
 
 
-/* ==================================
-   INTERACTIVE CIRCLE AREA
-   ================================== */
+/* ========================================
+   CIRCLE ARTWORK
+======================================== */
 
 #canvas {
-    position: absolute;
+    position: fixed;
 
-    /*
-       Smaller than the full browser window,
-       like Koalas to the Max.
-    */
-
-    width: 72vw;
-    height: 72vh;
+    width: 70vw;
+    height: 70vh;
 
     max-width: 950px;
     max-height: 700px;
 
     left: 50%;
-    top: 50%;
+    top: 48%;
 
-    transform: translate(-50%, -50%);
+    transform:
+        translate(-50%, -50%);
 
     z-index: 1;
 }
 
 
-/* ==================================
+/* ========================================
    BOTTOM RIGHT CONTROLS
-   ================================== */
+======================================== */
 
 #controls {
     position: fixed;
 
-    right: 32px;
-    bottom: 28px;
+    right: 30px;
+    bottom: 25px;
 
-    z-index: 100;
+    z-index: 9999;
 
     display: flex;
+
     align-items: center;
 
     gap: 18px;
-
-    pointer-events: auto;
 }
 
 
-/* LOCATION NAME */
-
 #photoName {
     font-size: 10px;
-    font-weight: 500;
 
-    letter-spacing: 1.8px;
+    letter-spacing: 2px;
 
     color: #111;
 }
 
-
-/* NEXT BUTTON */
 
 #nextButton {
     border: none;
 
     background: transparent;
 
-    padding: 6px 0;
-
-    color: #111;
-
-    font-family: Arial, Helvetica, sans-serif;
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
 
     font-size: 11px;
+
     font-weight: 600;
 
     letter-spacing: 2px;
 
-    cursor: pointer;
+    color: #111;
 
-    pointer-events: auto;
+    cursor: pointer;
 }
 
 
 #nextButton:hover {
-    opacity: 0.45;
+    opacity: 0.5;
+}
+
+
+/* ========================================
+   BOTTOM LEFT LOVE NOTE
+======================================== */
+
+#loveNote {
+    position: fixed;
+
+    left: 30px;
+    bottom: 25px;
+
+    z-index: 9999;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    font-size: 10px;
+
+    letter-spacing: 2px;
+
+    color: #111;
 }
