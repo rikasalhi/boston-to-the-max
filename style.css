@@ -23,9 +23,7 @@ body {
 }
 
 
-/* ========================================
-   CIRCLE ARTWORK
-======================================== */
+/* CIRCLE ARTWORK */
 
 #canvas {
     position: fixed;
@@ -39,16 +37,13 @@ body {
     left: 50%;
     top: 48%;
 
-    transform:
-        translate(-50%, -50%);
+    transform: translate(-50%, -50%);
 
     z-index: 1;
 }
 
 
-/* ========================================
-   BOTTOM RIGHT CONTROLS
-======================================== */
+/* BOTTOM RIGHT NEXT BUTTON */
 
 #controls {
     position: fixed;
@@ -57,27 +52,11 @@ body {
     bottom: 25px;
 
     z-index: 9999;
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 18px;
-}
-
-
-#photoName {
-    font-size: 10px;
-
-    letter-spacing: 2px;
-
-    color: #111;
 }
 
 
 #nextButton {
     border: none;
-
     background: transparent;
 
     font-family:
@@ -86,9 +65,7 @@ body {
         sans-serif;
 
     font-size: 11px;
-
     font-weight: 600;
-
     letter-spacing: 2px;
 
     color: #111;
@@ -102,9 +79,7 @@ body {
 }
 
 
-/* ========================================
-   BOTTOM LEFT LOVE NOTE
-======================================== */
+/* BOTTOM LEFT LOVE NOTE */
 
 #loveNote {
     position: fixed;
@@ -120,7 +95,6 @@ body {
         sans-serif;
 
     font-size: 10px;
-
     letter-spacing: 2px;
 
     color: #111;
