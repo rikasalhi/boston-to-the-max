@@ -2,7 +2,6 @@ const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
 const nextButton = document.getElementById("nextButton");
-const photoName = document.getElementById("photoName");
 
 
 // ========================================
@@ -11,16 +10,13 @@ const photoName = document.getElementById("photoName");
 
 const photos = [
     {
-        src: "./imageswebsite/newbury.jpg",
-        name: "NEWBURY STREET"
+        src: "./imageswebsite/newbury.jpg"
     },
     {
-        src: "./imageswebsite/common.jpg",
-        name: "BOSTON COMMON"
+        src: "./imageswebsite/common.jpg"
     },
     {
-        src: "./imageswebsite/beacon.jpg",
-        name: "BEACON HILL"
+        src: "./imageswebsite/beacon.jpg"
     }
 ];
 
@@ -40,8 +36,8 @@ const MIN_SIZE = 3;
 const ANIMATION_SPEED = 0.035;
 
 
-// A circle must reach this much of its
-// final size before it can split again.
+// Circle must finish 95% of its animation
+// before it can split again
 const SPLIT_READY = 0.95;
 
 
@@ -52,8 +48,6 @@ const SPLIT_READY = 0.95;
 function loadPhoto() {
 
     const photo = photos[currentPhoto];
-
-    photoName.textContent = photo.name;
 
     const image = new Image();
 
@@ -128,9 +122,6 @@ function prepareImage() {
     hiddenCanvas.height =
         canvas.height;
 
-
-    // Make image fill the artwork area
-    // without stretching it.
 
     const scale = Math.max(
 
@@ -261,8 +252,8 @@ class Circle {
         this.size = size;
 
 
-        // Newly created circles begin smaller
-        // and smoothly grow into place.
+        // New circles start smaller
+        // and slowly grow into place
 
         if (animate) {
 
@@ -271,7 +262,7 @@ class Circle {
 
         } else {
 
-            // Starting circle appears normally.
+            // First circle starts full size
 
             this.displaySize =
                 size;
@@ -295,12 +286,10 @@ class Circle {
 
 
     // ====================================
-    // DRAW CIRCLE
+    // DRAW
     // ====================================
 
     draw() {
-
-        // Smoothly approach final size.
 
         this.displaySize +=
 
@@ -312,7 +301,8 @@ class Circle {
             * ANIMATION_SPEED;
 
 
-        // Snap to final size when extremely close.
+        // Snap to final size when
+        // extremely close
 
         if (
 
@@ -349,13 +339,10 @@ class Circle {
         ctx.arc(
 
             centerX,
-
             centerY,
-
             radius,
 
             0,
-
             Math.PI * 2
 
         );
@@ -366,12 +353,11 @@ class Circle {
 
 
         ctx.fill();
-
     }
 
 
     // ====================================
-    // CHECK IF CURSOR IS INSIDE
+    // CHECK CURSOR
     // ====================================
 
     contains(
@@ -379,15 +365,8 @@ class Circle {
         mouseY
     ) {
 
-        /*
-            IMPORTANT:
-
-            A newly created circle CANNOT
-            immediately split again.
-
-            It has to finish almost all of
-            its growth animation first.
-        */
+        // Don't let a new circle split
+        // until its animation is almost done
 
         if (
 
@@ -422,12 +401,6 @@ class Circle {
             mouseY -
             centerY;
 
-
-        /*
-            Use the currently visible
-            circle radius instead of the
-            invisible final radius.
-        */
 
         const radius =
             this.displaySize / 2;
@@ -472,11 +445,8 @@ class Circle {
             new Circle(
 
                 this.x,
-
                 this.y,
-
                 half,
-
                 true
 
             ),
@@ -487,11 +457,8 @@ class Circle {
             new Circle(
 
                 this.x + half,
-
                 this.y,
-
                 half,
-
                 true
 
             ),
@@ -502,11 +469,8 @@ class Circle {
             new Circle(
 
                 this.x,
-
                 this.y + half,
-
                 half,
-
                 true
 
             ),
@@ -517,11 +481,8 @@ class Circle {
             new Circle(
 
                 this.x + half,
-
                 this.y + half,
-
                 half,
-
                 true
 
             )
@@ -532,15 +493,13 @@ class Circle {
 
 
 // ========================================
-// ONE BIG STARTING CIRCLE
+// STARTING CIRCLE
 // ========================================
 
 function createStartingCircle() {
 
     circles = [];
 
-
-    // Size of entire artwork.
 
     const size =
         Math.min(
@@ -552,8 +511,6 @@ function createStartingCircle() {
         );
 
 
-    // Center it.
-
     const x =
         (canvas.width - size) / 2;
 
@@ -562,18 +519,16 @@ function createStartingCircle() {
         (canvas.height - size) / 2;
 
 
-    // Starting circle does NOT animate.
+    // One big circle
+    // No animation on page load
 
     circles.push(
 
         new Circle(
 
             x,
-
             y,
-
             size,
-
             false
 
         )
@@ -628,8 +583,6 @@ function draw() {
     }
 
 
-    // Continue animation.
-
     if (stillAnimating) {
 
         requestAnimationFrame(
@@ -641,7 +594,7 @@ function draw() {
 
 
 // ========================================
-// HOVER
+// HOVER EFFECT
 // ========================================
 
 canvas.addEventListener(
@@ -653,9 +606,6 @@ canvas.addEventListener(
         const rect =
             canvas.getBoundingClientRect();
 
-
-        // Convert mouse position to
-        // canvas coordinates.
 
         const mouseX =
 
@@ -687,12 +637,9 @@ canvas.addEventListener(
             );
 
 
-        const nextCircles =
-            [];
+        const nextCircles = [];
 
-
-        let changed =
-            false;
+        let changed = false;
 
 
         for (
@@ -702,11 +649,8 @@ canvas.addEventListener(
             if (
 
                 circle.contains(
-
                     mouseX,
-
                     mouseY
-
                 )
 
                 &&
@@ -716,22 +660,14 @@ canvas.addEventListener(
 
             ) {
 
-                // Replace hovered circle
-                // with four children.
-
                 nextCircles.push(
-
                     ...circle.split()
-
                 );
 
 
-                changed =
-                    true;
+                changed = true;
 
-            }
-
-            else {
+            } else {
 
                 nextCircles.push(
                     circle
@@ -774,8 +710,7 @@ nextButton.addEventListener(
 
         ) {
 
-            currentPhoto =
-                0;
+            currentPhoto = 0;
 
         }
 
@@ -808,7 +743,7 @@ window.addEventListener(
 
 
 // ========================================
-// START WEBSITE
+// START
 // ========================================
 
 loadPhoto();
