@@ -28,12 +28,16 @@ const photos = [
 let currentPhoto = 0;
 let currentImage = null;
 let imageData = null;
-
 let circles = [];
 
 
-// Smallest circles allowed
+// Smallest possible circle
 const MIN_SIZE = 3;
+
+
+// Animation speed
+// Smaller = slower/smoother
+const ANIMATION_SPEED = 0.07;
 
 
 // ========================================
@@ -54,6 +58,7 @@ function loadPhoto() {
         currentImage = image;
 
         setup();
+
     };
 
 
@@ -63,6 +68,7 @@ function loadPhoto() {
             "Could not load:",
             photo.src
         );
+
     };
 
 
@@ -118,7 +124,7 @@ function prepareImage() {
         canvas.height;
 
 
-    // Scale image to cover canvas
+    // Scale image to fill artwork area
 
     const scale = Math.max(
 
@@ -152,9 +158,11 @@ function prepareImage() {
         currentImage,
 
         x,
+
         y,
 
         width,
+
         height
 
     );
@@ -164,9 +172,11 @@ function prepareImage() {
         hiddenCtx.getImageData(
 
             0,
+
             0,
 
             canvas.width,
+
             canvas.height
 
         );
@@ -215,19 +225,19 @@ function getColor(x, y) {
         (y * canvas.width + x) * 4;
 
 
-    const r =
+    const red =
         imageData.data[index];
 
 
-    const g =
+    const green =
         imageData.data[index + 1];
 
 
-    const b =
+    const blue =
         imageData.data[index + 2];
 
 
-    return `rgb(${r}, ${g}, ${b})`;
+    return `rgb(${red}, ${green}, ${blue})`;
 }
 
 
@@ -251,24 +261,27 @@ class Circle {
         this.size = size;
 
 
-        // --------------------------------
-        // ANIMATION
-        // --------------------------------
+        /*
+            New circles start at 35%
+            of their final size.
+
+            This makes the transition
+            softer instead of making
+            circles explode outward.
+        */
 
         if (animate) {
 
-            // Start tiny
-
             this.displaySize =
-                size * 0.12;
+                size * 0.35;
 
         } else {
 
-            // Starting circle appears
-            // full size immediately
+            // First circle starts normally
 
             this.displaySize =
                 size;
+
         }
 
 
@@ -276,7 +289,7 @@ class Circle {
             size;
 
 
-        // Get color from photo
+        // Sample color from photograph
 
         this.color =
             getColor(
@@ -290,14 +303,16 @@ class Circle {
 
 
     // ====================================
-    // DRAW CIRCLE
+    // DRAW
     // ====================================
 
     draw() {
 
         /*
-           Smoothly animate toward
-           full circle size.
+            Smooth easing.
+
+            0.07 makes the growth
+            slower than before.
         */
 
         this.displaySize +=
@@ -307,7 +322,7 @@ class Circle {
                 this.displaySize
             )
 
-            * 0.20;
+            * ANIMATION_SPEED;
 
 
         const radius =
@@ -315,9 +330,8 @@ class Circle {
 
 
         /*
-           IMPORTANT:
-           Keep the circle centered while
-           it grows.
+            Keep circle centered while
+            it grows.
         */
 
         const centerX =
@@ -357,7 +371,7 @@ class Circle {
 
 
     // ====================================
-    // CHECK MOUSE
+    // IS CURSOR INSIDE CIRCLE?
     // ====================================
 
     contains(
@@ -403,7 +417,7 @@ class Circle {
 
 
     // ====================================
-    // SPLIT INTO FOUR
+    // SPLIT INTO FOUR CIRCLES
     // ====================================
 
     split() {
@@ -413,6 +427,7 @@ class Circle {
         ) {
 
             return [this];
+
         }
 
 
@@ -487,7 +502,7 @@ class Circle {
 
 
 // ========================================
-// CREATE ONE STARTING CIRCLE
+// ONE BIG STARTING CIRCLE
 // ========================================
 
 function createStartingCircle() {
@@ -496,11 +511,8 @@ function createStartingCircle() {
 
 
     /*
-       Size of the whole interactive
-       artwork.
-
-       Smaller than canvas so there
-       is white space around it.
+        Keep the circle contained in
+        the center of the page.
     */
 
     const size =
@@ -513,10 +525,6 @@ function createStartingCircle() {
         );
 
 
-    /*
-       Center it.
-    */
-
     const x =
         (canvas.width - size) / 2;
 
@@ -526,9 +534,10 @@ function createStartingCircle() {
 
 
     /*
-       FALSE means:
-       don't animate the first circle.
-       It starts at full size.
+        animate = false
+
+        The first big circle shouldn't
+        animate when the page loads.
     */
 
     circles.push(
@@ -558,9 +567,11 @@ function draw() {
     ctx.clearRect(
 
         0,
+
         0,
 
         canvas.width,
+
         canvas.height
 
     );
@@ -578,8 +589,8 @@ function draw() {
 
 
         /*
-           Check whether this circle
-           is still growing.
+            Check if any circles
+            are still growing.
         */
 
         if (
@@ -595,13 +606,14 @@ function draw() {
 
             stillAnimating =
                 true;
+
         }
     }
 
 
     /*
-       Keep drawing frames until
-       animation finishes.
+        Continue animation until
+        everything reaches full size.
     */
 
     if (stillAnimating) {
@@ -609,12 +621,13 @@ function draw() {
         requestAnimationFrame(
             draw
         );
+
     }
 }
 
 
 // ========================================
-// MOUSE HOVER
+// HOVER EFFECT
 // ========================================
 
 canvas.addEventListener(
@@ -628,8 +641,8 @@ canvas.addEventListener(
 
 
         /*
-           Convert browser mouse position
-           into canvas position.
+            Convert cursor position
+            to canvas coordinates.
         */
 
         const mouseX =
@@ -692,8 +705,8 @@ canvas.addEventListener(
             ) {
 
                 /*
-                   Replace hovered circle
-                   with four new ones.
+                    Hovered circle disappears
+                    and becomes four children.
                 */
 
                 nextCircles.push(
@@ -706,11 +719,14 @@ canvas.addEventListener(
                 changed =
                     true;
 
-            } else {
+            }
+
+            else {
 
                 nextCircles.push(
                     circle
                 );
+
             }
         }
 
@@ -722,6 +738,7 @@ canvas.addEventListener(
         if (changed) {
 
             draw();
+
         }
     }
 );
@@ -749,16 +766,18 @@ nextButton.addEventListener(
 
             currentPhoto =
                 0;
+
         }
 
 
         loadPhoto();
+
     }
 );
 
 
 // ========================================
-// RESIZE
+// WINDOW RESIZE
 // ========================================
 
 window.addEventListener(
@@ -772,13 +791,14 @@ window.addEventListener(
         ) {
 
             setup();
+
         }
     }
 );
 
 
 // ========================================
-// START
+// START WEBSITE
 // ========================================
 
 loadPhoto();
