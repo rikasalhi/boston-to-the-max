@@ -4,6 +4,11 @@ const ctx = canvas.getContext("2d");
 const nextButton = document.getElementById("nextButton");
 const photoName = document.getElementById("photoName");
 
+
+// ========================================
+// PHOTOS
+// ========================================
+
 const photos = [
     {
         src: "./imageswebsite/newbury.jpg",
@@ -19,12 +24,15 @@ const photos = [
     }
 ];
 
+
 let currentPhoto = 0;
 let currentImage = null;
 let imageData = null;
 
 let circles = [];
 
+
+// Smallest circles allowed
 const MIN_SIZE = 3;
 
 
@@ -40,12 +48,14 @@ function loadPhoto() {
 
     const image = new Image();
 
+
     image.onload = function () {
 
         currentImage = image;
 
         setup();
     };
+
 
     image.onerror = function () {
 
@@ -54,6 +64,7 @@ function loadPhoto() {
             photo.src
         );
     };
+
 
     image.src = photo.src;
 }
@@ -68,11 +79,14 @@ function setup() {
     const rect =
         canvas.getBoundingClientRect();
 
+
     canvas.width =
         Math.round(rect.width);
 
+
     canvas.height =
         Math.round(rect.height);
+
 
     prepareImage();
 
@@ -91,15 +105,20 @@ function prepareImage() {
     const hiddenCanvas =
         document.createElement("canvas");
 
+
     const hiddenCtx =
         hiddenCanvas.getContext("2d");
+
 
     hiddenCanvas.width =
         canvas.width;
 
+
     hiddenCanvas.height =
         canvas.height;
 
+
+    // Scale image to cover canvas
 
     const scale = Math.max(
 
@@ -115,12 +134,14 @@ function prepareImage() {
     const width =
         currentImage.width * scale;
 
+
     const height =
         currentImage.height * scale;
 
 
     const x =
         (canvas.width - width) / 2;
+
 
     const y =
         (canvas.height - height) / 2;
@@ -153,7 +174,7 @@ function prepareImage() {
 
 
 // ========================================
-// SAMPLE COLOR FROM PHOTO
+// GET COLOR FROM PHOTO
 // ========================================
 
 function getColor(x, y) {
@@ -197,8 +218,10 @@ function getColor(x, y) {
     const r =
         imageData.data[index];
 
+
     const g =
         imageData.data[index + 1];
+
 
     const b =
         imageData.data[index + 2];
@@ -209,18 +232,51 @@ function getColor(x, y) {
 
 
 // ========================================
-// CIRCLE
+// CIRCLE CLASS
 // ========================================
 
 class Circle {
 
-    constructor(x, y, size) {
+    constructor(
+        x,
+        y,
+        size,
+        animate = true
+    ) {
 
         this.x = x;
+
         this.y = y;
 
         this.size = size;
 
+
+        // --------------------------------
+        // ANIMATION
+        // --------------------------------
+
+        if (animate) {
+
+            // Start tiny
+
+            this.displaySize =
+                size * 0.12;
+
+        } else {
+
+            // Starting circle appears
+            // full size immediately
+
+            this.displaySize =
+                size;
+        }
+
+
+        this.targetSize =
+            size;
+
+
+        // Get color from photo
 
         this.color =
             getColor(
@@ -233,9 +289,44 @@ class Circle {
     }
 
 
+    // ====================================
+    // DRAW CIRCLE
+    // ====================================
+
     draw() {
 
+        /*
+           Smoothly animate toward
+           full circle size.
+        */
+
+        this.displaySize +=
+
+            (
+                this.targetSize -
+                this.displaySize
+            )
+
+            * 0.20;
+
+
         const radius =
+            this.displaySize / 2;
+
+
+        /*
+           IMPORTANT:
+           Keep the circle centered while
+           it grows.
+        */
+
+        const centerX =
+            this.x +
+            this.size / 2;
+
+
+        const centerY =
+            this.y +
             this.size / 2;
 
 
@@ -244,9 +335,9 @@ class Circle {
 
         ctx.arc(
 
-            this.x + radius,
+            centerX,
 
-            this.y + radius,
+            centerY,
 
             radius,
 
@@ -265,20 +356,33 @@ class Circle {
     }
 
 
-    contains(mouseX, mouseY) {
+    // ====================================
+    // CHECK MOUSE
+    // ====================================
+
+    contains(
+        mouseX,
+        mouseY
+    ) {
 
         const centerX =
-            this.x + this.size / 2;
+            this.x +
+            this.size / 2;
+
 
         const centerY =
-            this.y + this.size / 2;
+            this.y +
+            this.size / 2;
 
 
         const dx =
-            mouseX - centerX;
+            mouseX -
+            centerX;
+
 
         const dy =
-            mouseY - centerY;
+            mouseY -
+            centerY;
 
 
         const radius =
@@ -297,6 +401,10 @@ class Circle {
         );
     }
 
+
+    // ====================================
+    // SPLIT INTO FOUR
+    // ====================================
 
     split() {
 
@@ -319,9 +427,12 @@ class Circle {
             new Circle(
 
                 this.x,
+
                 this.y,
 
-                half
+                half,
+
+                true
 
             ),
 
@@ -331,9 +442,12 @@ class Circle {
             new Circle(
 
                 this.x + half,
+
                 this.y,
 
-                half
+                half,
+
+                true
 
             ),
 
@@ -343,9 +457,12 @@ class Circle {
             new Circle(
 
                 this.x,
+
                 this.y + half,
 
-                half
+                half,
+
+                true
 
             ),
 
@@ -355,9 +472,12 @@ class Circle {
             new Circle(
 
                 this.x + half,
+
                 this.y + half,
 
-                half
+                half,
+
+                true
 
             )
 
@@ -367,7 +487,7 @@ class Circle {
 
 
 // ========================================
-// ONE STARTING CIRCLE
+// CREATE ONE STARTING CIRCLE
 // ========================================
 
 function createStartingCircle() {
@@ -376,8 +496,11 @@ function createStartingCircle() {
 
 
     /*
-       Keep the artwork smaller than
-       the canvas so we have white space.
+       Size of the whole interactive
+       artwork.
+
+       Smaller than canvas so there
+       is white space around it.
     */
 
     const size =
@@ -390,6 +513,10 @@ function createStartingCircle() {
         );
 
 
+    /*
+       Center it.
+    */
+
     const x =
         (canvas.width - size) / 2;
 
@@ -398,14 +525,23 @@ function createStartingCircle() {
         (canvas.height - size) / 2;
 
 
+    /*
+       FALSE means:
+       don't animate the first circle.
+       It starts at full size.
+    */
+
     circles.push(
 
         new Circle(
 
             x,
+
             y,
 
-            size
+            size,
+
+            false
 
         )
 
@@ -414,7 +550,7 @@ function createStartingCircle() {
 
 
 // ========================================
-// DRAW
+// DRAW EVERYTHING
 // ========================================
 
 function draw() {
@@ -430,11 +566,49 @@ function draw() {
     );
 
 
+    let stillAnimating =
+        false;
+
+
     for (
         const circle of circles
     ) {
 
         circle.draw();
+
+
+        /*
+           Check whether this circle
+           is still growing.
+        */
+
+        if (
+
+            Math.abs(
+
+                circle.displaySize -
+                circle.targetSize
+
+            ) > 0.2
+
+        ) {
+
+            stillAnimating =
+                true;
+        }
+    }
+
+
+    /*
+       Keep drawing frames until
+       animation finishes.
+    */
+
+    if (stillAnimating) {
+
+        requestAnimationFrame(
+            draw
+        );
     }
 }
 
@@ -453,27 +627,47 @@ canvas.addEventListener(
             canvas.getBoundingClientRect();
 
 
+        /*
+           Convert browser mouse position
+           into canvas position.
+        */
+
         const mouseX =
 
-            (event.clientX - rect.left)
+            (
+                event.clientX -
+                rect.left
+            )
 
             *
 
-            (canvas.width / rect.width);
+            (
+                canvas.width /
+                rect.width
+            );
 
 
         const mouseY =
 
-            (event.clientY - rect.top)
+            (
+                event.clientY -
+                rect.top
+            )
 
             *
 
-            (canvas.height / rect.height);
+            (
+                canvas.height /
+                rect.height
+            );
 
 
-        const nextCircles = [];
+        const nextCircles =
+            [];
 
-        let changed = false;
+
+        let changed =
+            false;
 
 
         for (
@@ -483,25 +677,36 @@ canvas.addEventListener(
             if (
 
                 circle.contains(
+
                     mouseX,
+
                     mouseY
+
                 )
 
                 &&
 
-                circle.size > MIN_SIZE
+                circle.size >
+                MIN_SIZE
 
             ) {
 
+                /*
+                   Replace hovered circle
+                   with four new ones.
+                */
+
                 nextCircles.push(
+
                     ...circle.split()
+
                 );
 
-                changed = true;
 
-            }
+                changed =
+                    true;
 
-            else {
+            } else {
 
                 nextCircles.push(
                     circle
@@ -534,11 +739,16 @@ nextButton.addEventListener(
 
         currentPhoto++;
 
+
         if (
-            currentPhoto >= photos.length
+
+            currentPhoto >=
+            photos.length
+
         ) {
 
-            currentPhoto = 0;
+            currentPhoto =
+                0;
         }
 
 
@@ -557,7 +767,9 @@ window.addEventListener(
 
     function () {
 
-        if (currentImage) {
+        if (
+            currentImage
+        ) {
 
             setup();
         }
