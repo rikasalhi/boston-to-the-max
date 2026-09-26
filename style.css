@@ -22,7 +22,7 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    cursor: crosshair;
+    cursor: default;
 }
 
 /* little location label */
